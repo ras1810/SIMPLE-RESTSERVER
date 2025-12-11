@@ -9,7 +9,7 @@ router.get('/', productosGet);
 // POST
 router.post('/', productosPost);
 // PUT
-router.put('/:id', productosPut);
+router.put('/', productosPut);
 // DELETE
 router.delete('/', productosDelete);
 
