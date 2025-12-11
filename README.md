@@ -2,7 +2,8 @@
 
 Un simple rest-server utilizando node js y express js
 
-Estructura del proyecto:
+*Utilizando un archivo.txt como base de datos.
+*Estructura del proyecto:
 
     #controllers
     #models
