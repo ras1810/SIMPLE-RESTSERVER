@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 
 const rutas = require('../routes/productos.routes');
+const { DBconn } = require('../database/config.db');
 
 
 class Server{
@@ -11,6 +12,8 @@ class Server{
         this.app = express();
         this.port = process.env.PORT;
 
+        // DB
+        this.connDB();
         // Ejecutar
         this.middlewares();
         // Rutas
@@ -26,7 +29,12 @@ class Server{
     // Directorio public
         this.app.use(express.static('public'));
     }
-    
+    // DB
+    async connDB(){
+        await DBconn();
+    }
+
+
     // Rutas add+
     routes() {
         // API productos

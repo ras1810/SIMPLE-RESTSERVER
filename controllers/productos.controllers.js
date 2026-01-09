@@ -1,50 +1,70 @@
 const { response, request } = require('express');
-const DBproductos = require('../models/DB.productos');
-
-const db_productos = new DBproductos();
+const Producto = require('../models/producto.model');
 
 // Controller:GET
-const productosGet = ( req = request, res = response) => {
-    //const { pag="1", limit } = req.query // /api?q1=ejemplo+1&q2=ejemplo2
-    const datos = db_productos.getDB();
+const productosGet = async( req = request, res = response) => {
+
+    // contar cuantos registros tenemos
+    const totalDeRegistros = await Producto.countDocuments({ estado: true });
+    // validar que sea un numero y no un texto
+    const { limite } =req.query;
+    const limiteMax = Number(limite) <= totalDeRegistros ? limite : totalDeRegistros;
+    // solo muestra el registro en true no los elimina de la DB - solo  muestra "nombre" "precio" "_id"
+    const productos = await Producto.find({ estado: true }).select("nombre precio _id")
+        .limit(limiteMax) // paginando usuarios
+        //.skip(desde)
 
     res.json({
         msg: "GET",
-        datos
+        limit_max: limiteMax,
+        total_de_registros: totalDeRegistros,
+        productos
     });
 }
-// Controller:POST
-const productosPost = ( req, res = response) => {
 
-    const body = req.body;
-    db_productos.setDB(body);
+
+// Controller:POST
+const productosPost = async ( req, res = response) => {
+    //{nombre, ..resto}    
+    const { nombre, precio } = req.body;
+    const productos = new Producto({nombre, precio});
+
+    // verificar nombre
+    const nombreExist = await Producto.findOne({ nombre });
+    if (nombreExist){
+        return res.status(400).json({
+            msg: 'El nombre del producto ya esta registrado'
+        })
+    }
+    await productos.save();
 
     res.status(201).json({
         msg: 'Se agrego un producto',
-        body
     });
 }
-// Controller:PUT
-const productosPut = ( req, res = response) => {
 
-    const {id, nombre, precio} = req.query;
-    
-    db_productos.putDB(id,nombre, precio);
+// Controller:PUT
+const productosPut = async ( req, res = response) => {
+
+    const { id } = req.params;
+    // _id y nombre no seran modificados
+    const { _id, nombre, ...resto } = req.body
+
+    const producto = await Producto.findByIdAndUpdate(id, resto);
 
     res.json({
         method: "PUT",
-        msg: "Se actualizo el producto"
     });
 }
 // Controller:DELETE
-const productosDelete = ( req = request, res = response) => {
+const productosDelete = async ( req = request, res = response) => {
 
-    const id = req.query.id;
-    db_productos.deleteDB(id)
+    const { id } = req.params;
+    const producto = await Producto.findByIdAndUpdate(id, { estado: false });
 
     res.json({
-        method: "DELETE",
-        msg: "Se elimino el producto con el id: " + id
+        method: "El producto fue eliminado: ",
+        producto
     });
 }
 
